@@ -19,25 +19,14 @@ services:
     networks:
       - internal
 
-  greeter:
-    build:
-      context: .
-    image: microservices-api
-    env_file: docker-compose.env
-    environment:
-      SERVICES: greeter
-    depends_on:
-      - nats
-    networks:
-      - internal
 
-  products:
+  games:
     build:
       context: .
     image: microservices-api
     env_file: docker-compose.env
     environment:
-      SERVICES: products
+      SERVICES: game
     depends_on:
       - mongo
       - nats
@@ -50,7 +39,7 @@ services:
     image: microservices-api
     env_file: docker-compose.env
     environment:
-      SERVICES: questions
+      SERVICES: question
     depends_on:
       - mongo
       - nats
@@ -62,7 +51,7 @@ services:
       context: .
     env_file: docker-compose.env
     environment:
-      SERVICES: users
+      SERVICES: user
     depends_on:
       - mongo
       - nats

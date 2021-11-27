@@ -1,6 +1,6 @@
 "use strict";
 
-const DbMixin = require("../mixins/db.mixin_question");
+const DbMixin = require("../../mixins/db.mixin");
 
 /**
  * @typedef {import('moleculer').Context} Context Moleculer's Context
@@ -13,7 +13,7 @@ module.exports = {
 	/**
 	 * Mixins
 	 */
-	mixins: [DbMixin("questions")],
+	mixins: [DbMixin("api-question", "questions")],
 
 	/**
 	 * Settings
@@ -22,15 +22,19 @@ module.exports = {
 		// Available fields in the responses
 		fields: [
 			"_id",
-			"name",
-			"quantity",
-			"price"
+			"content",
+			"category_id",
+			"difficulty"
 		],
+
+		populates: {
+			"category_id": "categories.get"
+		},
 
 		// Validator for the `create` & `insert` actions.
 		entityValidator: {
-			name: "string|min:3",
-			price: "number|positive"
+			content: "string|min:3",
+			difficulty: "number|positive|max:3"
 		}
 	},
 
@@ -80,7 +84,7 @@ module.exports = {
 		 */
 		async seedDB() {
 			await this.adapter.insertMany([
-				{ name: "Question 1 ?", quantity: 10, price: 704 },
+				{content: "Quelle est la couleur du cheval blanc de Henry IV ?", category_id: '123456', difficulty: 1},
 			]);
 		}
 	},

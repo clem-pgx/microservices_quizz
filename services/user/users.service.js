@@ -3,7 +3,7 @@ const { MoleculerClientError } = require("moleculer").Errors;
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 
-const DbService = require("../mixins/db.mixin_user");
+const DbService = require("../../mixins/db.mixin");
 
 module.exports = {
 	name: "users",
@@ -13,7 +13,7 @@ module.exports = {
 	 * Mixins
 	 */
 	mixins: [
-		DbService("users")
+		DbService("api-users", "user")
 	],
 
 	/**

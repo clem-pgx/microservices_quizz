@@ -7,7 +7,7 @@ const DbService	= require("moleculer-db");
  * @typedef {import('moleculer').Context} Context Moleculer's Context
  */
 
-module.exports = function(collection) {
+module.exports = function(database, collection) {
 	const cacheCleanEventName = `cache.clean.${collection}`;
 
 	const schema = {
@@ -54,11 +54,11 @@ module.exports = function(collection) {
 		}
 	};
 
-	if (process.env.MONGO_URI_USER) {
+	if (process.env.MONGO_URI) {
 		// Mongo adapter
 		const MongoAdapter = require("moleculer-db-adapter-mongo");
 
-		schema.adapter = new MongoAdapter(process.env.MONGO_URI_USER);
+		schema.adapter = new MongoAdapter(`${process.env.MONGO_URI}/${database}`);
 		schema.collection = collection;
 	} else if (process.env.NODE_ENV === 'test') {
 		// NeDB memory adapter for testing
