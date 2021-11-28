@@ -24,7 +24,7 @@ module.exports = {
 		JWT_SECRET: process.env.JWT_SECRET || "jwt-secret",
 
 		/** Public fields */
-		fields: ["_id", "username", "email"],
+		fields: ["_id", "username", "email", "token"],
 
 		/** Validator schema for entity */
 		entityValidator: {
@@ -46,10 +46,11 @@ module.exports = {
 		 *
 		 * @returns {Object} Created entity & token
 		 */
-		create: {
+		register: {
 			params: {
 				user: { type: "object" }
 			},
+			rest: "POST /register",
 			async handler(ctx) {
 				let entity = ctx.params.user;
 				await this.validateEntity(entity);
@@ -60,14 +61,57 @@ module.exports = {
 							new MoleculerClientError("Email exists!", 422, "Email exists!", [{ field: "email", message: "Email exists"}])
 						);
 				}
-				entity.password = bcrypt.hashSync(entity.password, 10);
+				password = bcrypt.hashSync(entity.password, 10);
+				entity.password = password;
 				entity.createdAt = new Date();
+				const token = jwt.sign(
+					{ user_id: entity._id},
+					process.env.JWT_SECRET,
+					{
+					  expiresIn: "2h",
+				});
+				// save user token
+				entity.token = token;
 
 				const doc = await this.adapter.insert(entity);
 				const user = await this.transformDocuments(ctx, {}, doc);
 				return this.entityChanged("created", user, ctx).then(() => user);
 			}
 		},
+
+		login: {
+			params: {
+				user: { type: "object" }
+			},
+			rest: "POST /login",
+			async handler(ctx) {
+				let entity = ctx.params.user;
+				await this.validateEntity(entity);
+				if (entity.email) {
+					const found = await this.adapter.findOne({ email: entity.email });
+					if (found) {
+						if (await bcrypt.compareSync(found.password, entity.password)) {
+							// Create token
+							const token = jwt.sign(
+								{ user_id: entity._id},
+								process.env.JWT_SECRET,
+								{
+								  expiresIn: "2h",
+							});
+							// save user token
+							entity.token = token;
+							// user
+							const doc = await this.adapter.insert(entity);
+							const user = await this.transformDocuments(ctx, {}, doc);
+							return this.entityChanged("updated", user, ctx).then(() => user);
+						}
+					}
+				}
+				return Promise.reject(
+					new MoleculerClientError("Login failed", 422, "Login failed", [{ field: "email", message: "id's are incorrect"}])
+				);
+			}
+		}
 	},
 
     /**
