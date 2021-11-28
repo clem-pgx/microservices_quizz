@@ -28,7 +28,12 @@ module.exports = {
 		],
 
 		populates: {
-			"category_id": "categories.get"
+			"category_id": {
+				action: "categories.get",
+				params: {
+					fields: ["name"]
+				}
+			}
 		},
 
 		// Validator for the `create` & `insert` actions.
@@ -71,6 +76,40 @@ module.exports = {
 		 */
 
 		// --- ADDITIONAL ACTIONS ---
+
+		nextQuestion: {
+			rest: "GET /nextQuestion",
+			async handler(ctx) {
+
+				// Get random question
+				let questions;
+				try {
+					questions = await this.adapter.find({
+						query: {
+							difficulty: parseInt(ctx.params.difficulty, 10),
+							category_id: ctx.params.category_id
+						}
+					})
+
+				} catch (e) {
+					throw Error('Cannot find questions')
+				}
+
+				const nextQuestion = questions[Math.floor(Math.random() * questions.length)];
+
+				// Populate answers
+
+				let answers;
+
+				try {
+					answers = ctx.call('answers.find', {query: {question_id: nextQuestion.id}});
+				} catch (e) {
+					throw Error('Cannot find answers')
+				}
+
+				return answers;
+			}
+		}
 	},
 
 	/**

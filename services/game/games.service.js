@@ -60,14 +60,27 @@ module.exports = {
 		 */
 
 		// --- ADDITIONAL ACTIONS ---
-		async startGame(ctx) {
-			let fistQuestion;
-			try {
-				await this.broker.call('questions.get', {})
-			} catch (e) {
 
+		startGame: {
+			rest: "POST /startGame",
+			async handler(ctx) {
+				try {
+					return await this.adapter.insert({
+						user_id: ctx.params.user_id,
+						time: 0,
+						score: 0,
+						created_at: new Date(),
+						nb_questions: ctx.params.nb_questions,
+						difficulty: ctx.params.difficulty,
+						category_id: ctx.params.category_id
+					})
+
+				} catch (e) {
+					return false
+				}
 			}
 		}
+
 	},
 
 	/**
