@@ -83,33 +83,61 @@ module.exports = {
 			rest: "GET /nextQuestion",
 			async handler(ctx) {
 
-				// Get random question
-				let questions;
+				let game;
 				try {
-					questions = await this.adapter.find({
-						query: {
-							difficulty: parseInt(ctx.params.difficulty, 10),
-							category_id: ObjectId(ctx.params.category_id)
-						}
-					})
-
+					game = await ctx.call('games.get', { id: ctx.params.game_id });
 				} catch (e) {
-					throw Error('Cannot find questions')
+					throw Error('Cannot find game')
 				}
 
-				const nextQuestion = questions[Math.floor(Math.random() * questions.length)];
-
-				// Populate answers
-
-				let answers;
-
+				let gameQuestions;
 				try {
-					answers = await ctx.call('answers.find', {query: {question_id: nextQuestion._id}, fields: ["_id", "name", "question_id"]});
+					gameQuestions = await ctx.call('gameQuestions.find', {query: {game_id: ctx.params.game_id}});
 				} catch (e) {
-					throw Error(e.message)
+					throw Error('Cannot find game question')
 				}
 
-				return {nextQuestion, answers};
+				if(gameQuestions.length < game.nb_questions){
+					// Get random question
+					let questions;
+					try {
+						questions = await this.adapter.find({
+							query: {
+								difficulty: parseInt(ctx.params.difficulty, 10),
+								category_id: ObjectId(ctx.params.category_id)
+							}
+						})
+
+					} catch (e) {
+						throw Error('Cannot find questions')
+					}
+
+					const questionIds = gameQuestions.map(gq => gq.question_id);
+					console.log(questionIds);
+					const questionsFiltered = questions.filter(q => !questionIds.includes(q._id));
+					//console.log(questionsFiltered);
+					const nextQuestion = questionsFiltered[Math.floor(Math.random() * questionsFiltered.length)];
+
+					// Populate answers
+
+					let answers;
+
+					try {
+						answers = await ctx.call('answers.find', {query: {question_id: nextQuestion._id}, fields: ["_id", "name", "question_id"]});
+					} catch (e) {
+						throw Error(e.message)
+					}
+
+					try {
+						await ctx.call('gameQuestions.create', { game_id: ctx.params.game_id, question_id: nextQuestion._id});
+					} catch (e) {
+						throw Error(e.message)
+					}
+
+					return {nextQuestion, answers};
+				} else {
+					return "end game";
+				}
 			}
 		}
 	},

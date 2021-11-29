@@ -32,11 +32,6 @@ module.exports = {
 		},
 
 		// Validator for the `create` & `insert` actions.
-		entityValidator: {
-			time: "number|positive",
-			nb_questions: "number|positive",
-			difficulty: "number|positive|max:3"
-		}
 	},
 
 	/**
