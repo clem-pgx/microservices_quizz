@@ -39,10 +39,10 @@ module.exports = {
 				mergeParams: true,
 
 				// Enable authentication. Implement the logic into `authenticate` method. More info: https://moleculer.services/docs/0.14/moleculer-web.html#Authentication
-				authentication: false,
+				authentication: true,
 
 				// Enable authorization. Implement the logic into `authorize` method. More info: https://moleculer.services/docs/0.14/moleculer-web.html#Authorization
-				authorization: false,
+				authorization: true,
 
 				// The auto-alias feature allows you to declare your route alias directly in your services.
 				// The gateway will dynamically build the full routes from service schema.
@@ -96,6 +96,20 @@ module.exports = {
 
 				// Enable/disable logging
 				logging: true
+			},
+			{
+				path: "/register",
+				authentication: false,
+				aliases: {
+					"POST register" : "users.register"
+				}
+			},
+			{
+				path: "/login",
+				authentication: false,
+				aliases: {
+					"POST login" : "users.login"
+				}
 			}
 		],
 
@@ -141,7 +155,7 @@ module.exports = {
 				// Check the token. Tip: call a service which verify the token. E.g. `accounts.resolveToken`
 				if (decoded) {
 					// Returns the resolved user. It will be set to the `ctx.meta.user`
-					return { id: 1, name: "John Doe" };
+					return ctx.meta.user;
 
 				} else {
 					// Invalid token
@@ -166,11 +180,26 @@ module.exports = {
 		 */
 		async authorize(ctx, route, req) {
 			// Get the authenticated user.
-			const user = ctx.meta.user;
+			const auth = req.headers["authorization"];
 
-			// It check the `auth` property in action schema.
-			if (req.$action.auth == "required" && !user) {
-				throw new ApiGateway.Errors.UnAuthorizedError("NO_RIGHTS");
+			if (auth && auth.startsWith("Bearer")) {
+				const token = auth.slice(7);
+
+				const decoded = jwt.verify(token, process.env.JWT_SECRET );
+				// Check the token. Tip: call a service which verify the token. E.g. `accounts.resolveToken`
+				if (decoded) {
+					// Returns the resolved user. It will be set to the `ctx.meta.user`
+					return ctx.meta.user;
+
+				} else {
+					// Invalid token
+					throw new ApiGateway.Errors.UnAuthorizedError(ApiGateway.Errors.ERR_INVALID_TOKEN);
+				}
+
+			} else {
+				// No token. Throw an error or do nothing if anonymous access is allowed.
+				// throw new E.UnAuthorizedError(E.ERR_NO_TOKEN);
+				throw new ApiGateway.Errors.UnAuthorizedError(ApiGateway.Errors.ERR_INVALID_TOKEN);
 			}
 		}
 

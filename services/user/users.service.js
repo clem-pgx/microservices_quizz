@@ -24,7 +24,7 @@ module.exports = {
 		JWT_SECRET: process.env.JWT_SECRET || "jwt-secret",
 
 		/** Public fields */
-		fields: ["_id", "username", "email", "token"],
+		fields: ["_id", "username", "email"],
 
 		/** Validator schema for entity */
 		entityValidator: {
@@ -50,7 +50,6 @@ module.exports = {
 			params: {
 				user: { type: "object" }
 			},
-			rest: "POST /register",
 			async handler(ctx) {
 				let entity = ctx.params.user;
 				await this.validateEntity(entity);
@@ -64,18 +63,17 @@ module.exports = {
 				password = bcrypt.hashSync(entity.password, 10);
 				entity.password = password;
 				entity.createdAt = new Date();
+
+				const newUser = await this.adapter.insert(entity);
+				
 				const token = jwt.sign(
-					{ user_id: entity._id},
+					{ user_id: newUser._id},
 					process.env.JWT_SECRET,
 					{
-					  expiresIn: "2h",
+					  expiresIn: "12h",
 				});
-				// save user token
-				entity.token = token;
 
-				const doc = await this.adapter.insert(entity);
-				const user = await this.transformDocuments(ctx, {}, doc);
-				return this.entityChanged("created", user, ctx).then(() => user);
+				return token;
 			}
 		},
 
@@ -83,7 +81,6 @@ module.exports = {
 			params: {
 				user: { type: "object" }
 			},
-			rest: "POST /login",
 			async handler(ctx) {
 				let entity = ctx.params.user;
 				await this.validateEntity(entity);
@@ -92,20 +89,16 @@ module.exports = {
 					if (found) {
 						if (await bcrypt.compareSync(entity.password, found.password)) {
 
-							broker.call
 							// Create token
 							const token = jwt.sign(
 								{ user_id: found._id},
 								process.env.JWT_SECRET,
 								{
-								  expiresIn: "2h",
+								  expiresIn: "12h",
 							});
 							// save user token
-							found.token = token;
 							// user
-							const doc = await this.adapter.insert(found);
-							const user = await this.transformDocuments(ctx, {}, doc);
-							return this.entityChanged("updated", user, ctx).then(() => user);
+							return token;
 						}
 					} else {
 						return Promise.reject(

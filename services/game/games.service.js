@@ -62,6 +62,7 @@ module.exports = {
 		// --- ADDITIONAL ACTIONS ---
 
 		startGame: {
+			auth: "required",
 			rest: "POST /startGame",
 			async handler(ctx) {
 				try {
@@ -79,6 +80,7 @@ module.exports = {
 					return false
 				}
 			}
+			
 		}
 
 	},
