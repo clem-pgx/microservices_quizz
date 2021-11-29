@@ -1,6 +1,7 @@
 "use strict";
 
 const DbMixin = require("../../mixins/db.mixin");
+const {ObjectId} = require("mongodb");
 
 /**
  * @typedef {import('moleculer').Context} Context Moleculer's Context
@@ -87,7 +88,7 @@ module.exports = {
 					questions = await this.adapter.find({
 						query: {
 							difficulty: parseInt(ctx.params.difficulty, 10),
-							category_id: ctx.params.category_id
+							category_id: ObjectId(ctx.params.category_id)
 						}
 					})
 
@@ -102,9 +103,9 @@ module.exports = {
 				let answers;
 
 				try {
-					answers = ctx.call('answers.find', {query: {question_id: nextQuestion.id}});
+					answers = ctx.call('answers.find', {query: {question_id: nextQuestion._id}});
 				} catch (e) {
-					throw Error('Cannot find answers')
+					throw Error(e.message)
 				}
 
 				return answers;
@@ -122,9 +123,7 @@ module.exports = {
 		 * connection establishing & the collection is empty.
 		 */
 		async seedDB() {
-			await this.adapter.insertMany([
-				{content: "Quelle est la couleur du cheval blanc de Henry IV ?", category_id: '123456', difficulty: 1},
-			]);
+
 		}
 	},
 
