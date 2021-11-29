@@ -1,6 +1,8 @@
 "use strict";
 
 const DbMixin = require("../../mixins/db.mixin");
+const data = require("../../data/italie.json");
+const {ObjectId} = require("mongodb");
 
 module.exports = {
 	name: "categories",
@@ -46,6 +48,8 @@ module.exports = {
 		 *  - remove
 		 */
 
+
+
 		// --- ADDITIONAL ACTIONS ---
 	},
 
@@ -59,9 +63,35 @@ module.exports = {
 		 * connection establishing & the collection is empty.
 		 */
 		async seedDB() {
-			await this.adapter.insertMany([
-				{name: "Les animaux"},
-			]);
+			const data = require('../../data/italie.json');
+
+			const category = await this.adapter.insert(
+				{name: "Italie"}
+			);
+
+
+
+			for (const question of data.quizz.fr.débutant) {
+
+				const createdQuestion = await this.broker.call('questions.create', {
+					content: question.question,
+					difficulty: 1,
+					category_id: category._id
+				})
+
+				const answers = question.propositions.map(a => ({
+					name: a,
+					is_correct: question.réponse === a,
+					question_id: ObjectId(createdQuestion._id)
+				}))
+
+				for (const answer of answers) {
+					await this.broker.call('answers.create', answer);
+				}
+
+
+			}
+
 		}
 	},
 
