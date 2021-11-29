@@ -87,24 +87,30 @@ module.exports = {
 			async handler(ctx) {
 				let entity = ctx.params.user;
 				await this.validateEntity(entity);
-				if (entity.email) {
+				if (entity.email && entity.password) {
 					const found = await this.adapter.findOne({ email: entity.email });
 					if (found) {
-						if (await bcrypt.compareSync(found.password, entity.password)) {
+						if (await bcrypt.compareSync(entity.password, found.password)) {
+
+							broker.call
 							// Create token
 							const token = jwt.sign(
-								{ user_id: entity._id},
+								{ user_id: found._id},
 								process.env.JWT_SECRET,
 								{
 								  expiresIn: "2h",
 							});
 							// save user token
-							entity.token = token;
+							found.token = token;
 							// user
-							const doc = await this.adapter.insert(entity);
+							const doc = await this.adapter.insert(found);
 							const user = await this.transformDocuments(ctx, {}, doc);
 							return this.entityChanged("updated", user, ctx).then(() => user);
 						}
+					} else {
+						return Promise.reject(
+							new MoleculerClientError("Login failed", 422, "email not found", [{ field: "email", message: "email is incorrect"}])
+						);
 					}
 				}
 				return Promise.reject(
