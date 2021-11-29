@@ -79,6 +79,7 @@ module.exports = {
 		// --- ADDITIONAL ACTIONS ---
 
 		nextQuestion: {
+
 			rest: "GET /nextQuestion",
 			async handler(ctx) {
 
@@ -103,13 +104,12 @@ module.exports = {
 				let answers;
 
 				try {
-					answers = ctx.call('answers.find', {query: {question_id: nextQuestion._id}});
+					answers = await ctx.call('answers.find', {query: {question_id: nextQuestion._id}, fields: ["_id", "name", "question_id"]});
 				} catch (e) {
 					throw Error(e.message)
 				}
 
-				return answers;
-				
+				return {nextQuestion, answers};
 			}
 		}
 	},
