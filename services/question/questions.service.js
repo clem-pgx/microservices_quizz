@@ -79,7 +79,7 @@ module.exports = {
 		// --- ADDITIONAL ACTIONS ---
 
 		nextQuestion: {
-
+			auth: "required",
 			rest: "GET /nextQuestion",
 			async handler(ctx) {
 
