@@ -63,20 +63,132 @@ module.exports = {
 		 * connection establishing & the collection is empty.
 		 */
 		async seedDB() {
-			const data = require('../../data/italie.json');
+			const italie = require('../../data/italie.json');
+			const pokemon = require('../../data/pokemon.json');
 
-			const category = await this.adapter.insert(
+			const category1 = await this.adapter.insert(
 				{name: "Italie"}
+			);
+
+			const category2 = await this.adapter.insert(
+				{name: "Pokemon"}
 			);
 
 
 
-			for (const question of data.quizz.fr.débutant) {
+			for (const question of italie.quizz.fr.débutant) {
 
 				const createdQuestion = await this.broker.call('questions.create', {
 					content: question.question,
 					difficulty: 1,
-					category_id: category._id
+					category_id: category1._id
+				})
+
+				const answers = question.propositions.map(a => ({
+					name: a,
+					is_correct: question.réponse === a,
+					question_id: ObjectId(createdQuestion._id)
+				}))
+
+				for (const answer of answers) {
+					await this.broker.call('answers.create', answer);
+				}
+
+
+			}
+
+			for (const question of italie.quizz.fr.confirmé) {
+
+				const createdQuestion = await this.broker.call('questions.create', {
+					content: question.question,
+					difficulty: 2,
+					category_id: category1._id
+				})
+
+				const answers = question.propositions.map(a => ({
+					name: a,
+					is_correct: question.réponse === a,
+					question_id: ObjectId(createdQuestion._id)
+				}))
+
+				for (const answer of answers) {
+					await this.broker.call('answers.create', answer);
+				}
+
+
+			}
+
+
+
+			for (const question of italie.quizz.fr.expert) {
+
+				const createdQuestion = await this.broker.call('questions.create', {
+					content: question.question,
+					difficulty: 3,
+					category_id: category1._id
+				})
+
+				const answers = question.propositions.map(a => ({
+					name: a,
+					is_correct: question.réponse === a,
+					question_id: ObjectId(createdQuestion._id)
+				}))
+
+				for (const answer of answers) {
+					await this.broker.call('answers.create', answer);
+				}
+
+
+			}
+
+			for (const question of pokemon.quizz.fr.débutant) {
+
+				const createdQuestion = await this.broker.call('questions.create', {
+					content: question.question,
+					difficulty: 1,
+					category_id: category2._id
+				})
+
+				const answers = question.propositions.map(a => ({
+					name: a,
+					is_correct: question.réponse === a,
+					question_id: ObjectId(createdQuestion._id)
+				}))
+
+				for (const answer of answers) {
+					await this.broker.call('answers.create', answer);
+				}
+
+
+			}
+
+			for (const question of pokemon.quizz.fr.confirmé) {
+
+				const createdQuestion = await this.broker.call('questions.create', {
+					content: question.question,
+					difficulty: 2,
+					category_id: category2._id
+				})
+
+				const answers = question.propositions.map(a => ({
+					name: a,
+					is_correct: question.réponse === a,
+					question_id: ObjectId(createdQuestion._id)
+				}))
+
+				for (const answer of answers) {
+					await this.broker.call('answers.create', answer);
+				}
+
+
+			}
+
+			for (const question of pokemon.quizz.fr.expert) {
+
+				const createdQuestion = await this.broker.call('questions.create', {
+					content: question.question,
+					difficulty: 3,
+					category_id: category2._id
 				})
 
 				const answers = question.propositions.map(a => ({

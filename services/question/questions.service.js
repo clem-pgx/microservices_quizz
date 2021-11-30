@@ -85,7 +85,7 @@ module.exports = {
 
 				let game;
 				try {
-					game = await ctx.call('games.get', { id: ctx.params.game_id });
+					game = await ctx.call('games.get', {id: ctx.params.game_id});
 				} catch (e) {
 					throw Error('Cannot find game')
 				}
@@ -97,14 +97,14 @@ module.exports = {
 					throw Error('Cannot find game question')
 				}
 
-				if(gameQuestions.length < game.nb_questions){
+				if (gameQuestions.length < game.nb_questions) {
 					// Get random question
 					let questions;
 					try {
 						questions = await this.adapter.find({
 							query: {
-								difficulty: parseInt(ctx.params.difficulty, 10),
-								category_id: ObjectId(ctx.params.category_id)
+								difficulty: parseInt(game.difficulty, 10),
+								category_id: ObjectId(game.category_id)
 							}
 						})
 
@@ -113,9 +113,7 @@ module.exports = {
 					}
 
 					const questionIds = gameQuestions.map(gq => gq.question_id);
-					console.log(questionIds);
-					const questionsFiltered = questions.filter(q => !questionIds.includes(q._id));
-					//console.log(questionsFiltered);
+					const questionsFiltered = questions.filter(q => !questionIds.includes(q._id.toString()));
 					const nextQuestion = questionsFiltered[Math.floor(Math.random() * questionsFiltered.length)];
 
 					// Populate answers
@@ -123,13 +121,19 @@ module.exports = {
 					let answers;
 
 					try {
-						answers = await ctx.call('answers.find', {query: {question_id: nextQuestion._id}, fields: ["_id", "name", "question_id"]});
+						answers = await ctx.call('answers.find', {
+							query: {question_id: nextQuestion._id},
+							fields: ["_id", "name", "question_id"]
+						});
 					} catch (e) {
 						throw Error(e.message)
 					}
 
 					try {
-						await ctx.call('gameQuestions.create', { game_id: ctx.params.game_id, question_id: nextQuestion._id});
+						await ctx.call('gameQuestions.create', {
+							game_id: ctx.params.game_id,
+							question_id: nextQuestion._id
+						});
 					} catch (e) {
 						throw Error(e.message)
 					}

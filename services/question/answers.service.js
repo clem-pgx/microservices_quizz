@@ -34,7 +34,7 @@ module.exports = {
 
 		// Validator for the `create` & `insert` actions.
 		entityValidator: {
-			name: "string|min:3",
+			name: "string",
 			is_correct: "boolean"
 		}
 	},
