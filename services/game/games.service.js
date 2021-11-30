@@ -68,7 +68,7 @@ module.exports = {
 			rest: "POST /startGame",
 			async handler(ctx) {
 				try {
-					return await this.adapter.insert({
+					const newGame = await this.adapter.insert({
 						user_id: ctx.params.user_id,
 						time: 0,
 						score: 0,
@@ -77,6 +77,8 @@ module.exports = {
 						difficulty: ctx.params.difficulty,
 						category_id: ctx.params.category_id
 					})
+
+					return await ctx.call('questions.nextQuestion', {game_id: newGame._id})
 
 				} catch (e) {
 					return false
