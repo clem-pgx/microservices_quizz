@@ -63,8 +63,7 @@ module.exports = {
 							}])
 						);
 				}
-				password = bcrypt.hashSync(entity.password, 10);
-				entity.password = password;
+				entity.password = bcrypt.hashSync(entity.password, 10);
 				entity.createdAt = new Date();
 
 				const newUser = await this.adapter.insert(entity);
@@ -76,7 +75,12 @@ module.exports = {
 						expiresIn: "12h",
 					});
 
-				return token;
+				return {
+
+					id: newUser._id,
+					username: newUser.username
+					, token
+				};
 			}
 		},
 
@@ -87,21 +91,25 @@ module.exports = {
 			async handler(ctx) {
 				let entity = ctx.params.user;
 				if (entity.email && entity.password) {
-					const found = await this.adapter.findOne({email: entity.email});
-					await this.validateEntity(found);
-					if (found) {
-						if (await bcrypt.compareSync(entity.password, found.password)) {
+					const user = await this.adapter.findOne({email: entity.email});
+					await this.validateEntity(user);
+					if (user) {
+						if (await bcrypt.compareSync(entity.password, user.password)) {
 
 							// Create token
 							const token = jwt.sign(
-								{user_id: found._id},
+								{user_id: user._id},
 								process.env.JWT_SECRET,
 								{
 									expiresIn: "12h",
 								});
 							// save user token
 							// user
-							return token;
+							return {
+								id: user._id,
+								username: user.username
+								, token
+							};
 						}
 					} else {
 						return Promise.reject(
