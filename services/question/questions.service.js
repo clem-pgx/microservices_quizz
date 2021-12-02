@@ -138,7 +138,7 @@ module.exports = {
 						throw Error(e.message)
 					}
 
-					return {nextQuestion, answers};
+					return {gameId: game._id, nextQuestion, answers};
 				} else {
 					return "end game";
 				}

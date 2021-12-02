@@ -25,19 +25,19 @@ module.exports = {
 		use: [],
 
 		cors: {
-            // Configures the Access-Control-Allow-Origin CORS header.
-            origin: "*",
-            // Configures the Access-Control-Allow-Methods CORS header.
-            methods: ["GET", "OPTIONS", "POST", "PUT", "DELETE"],
-            // Configures the Access-Control-Allow-Headers CORS header.
-            allowedHeaders: ['Content-Type'],
-            // Configures the Access-Control-Expose-Headers CORS header.
-            exposedHeaders: [],
-            // Configures the Access-Control-Allow-Credentials CORS header.
-            credentials: false,
-            // Configures the Access-Control-Max-Age CORS header.
-            maxAge: 3600
-        },
+			// Configures the Access-Control-Allow-Origin CORS header.
+			origin: "*",
+			// Configures the Access-Control-Allow-Methods CORS header.
+			methods: ["GET", "OPTIONS", "POST", "PUT", "DELETE"],
+			// Configures the Access-Control-Allow-Headers CORS header.
+			allowedHeaders: ["Content-Type", "Authorization"],
+			// Configures the Access-Control-Expose-Headers CORS header.
+			exposedHeaders: [],
+			// Configures the Access-Control-Allow-Credentials CORS header.
+			credentials: false,
+			// Configures the Access-Control-Max-Age CORS header.
+			maxAge: 3600
+		},
 
 		routes: [
 			{
@@ -49,6 +49,7 @@ module.exports = {
 
 				// Route-level Express middlewares. More info: https://moleculer.services/docs/0.14/moleculer-web.html#Middlewares
 				use: [],
+
 
 				// Enable/disable parameter merging method. More info: https://moleculer.services/docs/0.14/moleculer-web.html#Disable-merging
 				mergeParams: true,
@@ -63,9 +64,7 @@ module.exports = {
 				// The gateway will dynamically build the full routes from service schema.
 				autoAliases: true,
 
-				aliases: {
-
-				},
+				aliases: {},
 
 				/**
 				 * Before call hook. You can check the request.
@@ -116,8 +115,8 @@ module.exports = {
 				path: "/",
 				authentication: false,
 				aliases: {
-					"POST register" : "users.register",
-					"POST login" : "users.login"
+					"POST register": "users.register",
+					"POST login": "users.login"
 				}
 			}
 		],
@@ -160,7 +159,7 @@ module.exports = {
 			if (auth && auth.startsWith("Bearer")) {
 				const token = auth.slice(7);
 
-				const decoded = jwt.verify(token, process.env.JWT_SECRET );
+				const decoded = jwt.verify(token, process.env.JWT_SECRET);
 				// Check the token. Tip: call a service which verify the token. E.g. `accounts.resolveToken`
 				if (decoded) {
 					// Returns the resolved user. It will be set to the `ctx.meta.user`
@@ -194,7 +193,7 @@ module.exports = {
 			if (auth && auth.startsWith("Bearer")) {
 				const token = auth.slice(7);
 
-				const decoded = jwt.verify(token, process.env.JWT_SECRET );
+				const decoded = jwt.verify(token, process.env.JWT_SECRET);
 				// Check the token. Tip: call a service which verify the token. E.g. `accounts.resolveToken`
 				if (decoded) {
 					// Returns the resolved user. It will be set to the `ctx.meta.user`
